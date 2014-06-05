@@ -38,11 +38,7 @@ module Hpath
   def self._apply_filters(object, filter)
     if object.is_a?(Array)
       object.select do |element|
-        if element.is_a?(Hash)
-          filter.applies?(element)
-        else
-          raise "Cannot filter non-hash array elements"
-        end
+        filter.applies?(element)
       end
     else
       #binding.pry
