@@ -1,9 +1,5 @@
 describe Hpath do
   describe "#get" do
-    it "takes an object and a hpath string" do
-      # Hpath.get(object, "/foo/bar")
-    end
-
     describe "returns the corresponding value from the given object" do
       it "processes \"/key\" for a nested hash" do
         hpath_result = Hpath.get({ foo: { bar: 1 } }, "/foo")
@@ -53,6 +49,11 @@ describe Hpath do
       it "processes \"/[key1=value1,(key2=value2|key3=value3)]\" for a array of hashes" do
         hpath_result = Hpath.get([{a:"1", b:"2", c:"3"}, {a:"1", b:"5", c:"6"}, {a:"2", b:"1", c:"3"}], "/[a=1,(b=5|c=3)]")
         expect(hpath_result).to eq([{:a=>"1", :b=>"2", :c=>"3"}, {:a=>"1", :b=>"5", :c=>"6"}])
+      end
+      
+      it "processes \"/array/key\" for an array of hashes" do
+        hpath_result = Hpath.get([{a:"1", b:"2", c:"3"}, {a:"1", b:"5", c:"6"}, {a:"2", b:"1", c:"3"}], "/a")
+        expect(hpath_result).to eq(["1", "1", "2"])
       end
     end
   end

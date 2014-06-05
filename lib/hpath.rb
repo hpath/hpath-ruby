@@ -50,7 +50,15 @@ module Hpath
       if identifier.to_s == "*"
         object
       else
-        raise "Tried to access an array by a key!"
+        object.map do |element|
+          if element.is_a?(Hash)
+            element[identifier]
+          elsif element.respond_to?(identifier)
+            element.send(identifier)
+          else
+            raise "Cannot apply identifier to collection object!"
+          end
+        end
       end
     elsif object.is_a?(Hash)
       if identifier.to_s == "*"
