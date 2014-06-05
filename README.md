@@ -136,12 +136,14 @@ Hpath.get {a: "b", c: "d", e: "f"}, "/*"
 ```
 
 ### `/key`
-If the current element is a hash, return the value of the given key. If the current element is not a hash, but has a method named `key`, this method is called and the result is returned. If the current element is an array, the non-array behaviour is applied to all members of the array.
+If the current element is a hash, return the value of the given key. If the current element is not a hash, but has a method named `key`, this method is called and the result is returned.
 
 ```ruby
 Hpath.get {a: { b: "c" } }, "/a"
 # => { b: "c" }
 ```
+
+If the current element is an array, the non-array behaviour is applied to all members of the array.
 
 ```ruby
 Hpath.get([{a:"1", b:"2", c:"3"}, {a:"2", b:"5", c:"6"}], "/a")
