@@ -21,6 +21,7 @@ class Hpath::Parser
       element[:indices] = [element[:indices]] if !element[:indices].nil? && !element[:indices].is_a?(Array)
       element[:keys] ||= nil
       element[:keys] = [element[:keys]] if !element[:keys].nil? && !element[:keys].is_a?(Array)
+      element[:type] = element[:type] == "[]" || element[:indices].is_a?(Array) ? Array : Hash
       element
     end
 
@@ -68,7 +69,7 @@ class Hpath::Parser
       }
 
       rule(:node) {
-        str("/") >> (identifier.as(:identifier) | (str("::") >> identifier.as(:axis))).maybe >> (str("[") >> space? >> (indices.as(:indices) | filter | keys.as(:keys)) >> space? >> str("]")).maybe
+        str("/") >> (identifier.as(:identifier) | (str("::") >> identifier.as(:axis))).maybe >> (str("[]").as(:type) | (str("[") >> space? >> (indices.as(:indices) | filter | keys.as(:keys)) >> space? >> str("]"))).maybe
       }
 
       rule(:path) {
@@ -87,13 +88,14 @@ class Hpath::Parser
   def transformation
     @transformation ||=
     Class.new(Parslet::Transform) do
-      rule(axis: simple(:axis), identifier: simple(:identifier), filter: subtree(:filter), indices: subtree(:indices), keys: subtree(:keys)) {
+      rule(axis: simple(:axis), identifier: simple(:identifier), filter: subtree(:filter), indices: subtree(:indices), keys: subtree(:keys), type: simple(:type)) {
         {
           axis: axis.nil? ? nil : axis.to_s,
           identifier: identifier.nil? ? nil : identifier.to_s,
           filter: filter,
           indices: indices.nil? ? nil : indices.map { |element| Integer(element[:index]) },
-          keys: keys.nil? ? nil : keys.map { |element| element[:key].to_s.to_sym }
+          keys: keys.nil? ? nil : keys.map { |element| element[:key].to_s.to_sym },
+          type: type
         }
       }
 
