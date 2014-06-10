@@ -64,7 +64,7 @@ class Hpath::Parser
       }
 
       rule(:identifier) {
-        match('[a-zA-Z0-9*]').repeat(1)
+        match('[a-zA-Z0-9*_]').repeat(1)
       }
 
       rule(:node) {
