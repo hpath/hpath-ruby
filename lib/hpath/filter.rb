@@ -19,11 +19,12 @@ class Hpath::Filter
     elsif @type == :or_filter
       @children.any? { |child_filter| child_filter.applies?(object) }
     elsif @type == :key_value_filter
-      if object.is_a?(Hash)
-        object[@key] == @value
+      if object.is_a?(Hash) && (@value.is_a?(String) || @value.is_a?(Symbol))
+        object[@key.to_s] == @value.to_s || object[@key.to_sym] == @value.to_s ||
+        object[@key.to_s] == @value.to_sym || object[@key.to_sym] == @value.to_sym
       else
-        if object.respond_to(@key.to_sym)
-          object.send(@key.to_sym) == @value
+        if object.respond_to(@key)
+          object.send(@key) == @value
         end
       end
     end
