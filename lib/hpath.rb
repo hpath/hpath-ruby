@@ -8,6 +8,11 @@ module Hpath
     _get(object, hpath[:path])
   end
 
+  def self.set(object, hpath_string, value)
+    hpath = Hpath::Parser.parse(hpath_string)
+    _set(object, hpath[:path], value)
+  end
+
   #
   private
   #
@@ -39,18 +44,46 @@ module Hpath
     self._get(object, paths, _object)
   end
 
+  def self._set(object, paths, value)
+    if paths.empty?
+      if object.is_a?(Array)
+        object.push(value)
+      elsif object.is_a?(Hash)
+        object.merge!(value)
+      end
+
+      return
+    else
+      path = paths.shift
+    end
+
+    if (_object = self._get(object, [path])).nil?
+      if object.is_a?(Array)
+        if path[:type] == Array
+          object.push(_object = [])
+        elsif path[:type] == Hash
+          object.push({ path[:identifier].to_sym => (_object = {}) })
+        end
+      elsif object.is_a?(Hash)
+        object[path[:identifier].to_sym] = (_object = path[:type].new)
+      end
+    end
+
+    self._set(_object, paths, value)
+  end
+
   def self._apply_filters(object, filter)
     if object.is_a?(Array)
       object.select do |element|
         filter.applies?(element)
       end
     else
-      #binding.pry
+      # TODO
     end
   end
 
   def self._resolve_identifier(object, identifier)
-    if object.is_a?(Array)
+    if object.is_a?(Array) && !object.empty?
       if identifier.to_s == "*"
         object
       else
@@ -71,14 +104,14 @@ module Hpath
         object[identifier.to_s] || object[identifier.to_sym]
       end
     else
-      #binding.pry
+      # TODO
     end
   end
 
   def self._resolve_indices(object, indices)
     if indices.length == 1
       object[indices.first]
-    else
+    elsif indices.length > 1
       indices.map { |index| object[index] }
     end
   end
