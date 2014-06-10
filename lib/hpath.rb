@@ -11,7 +11,9 @@ module Hpath
   #
   private
   #
-  def self._get(object, paths)
+  def self._get(object, paths, parent = object)
+    _object = object
+
     if paths.empty?
       return object
     else
@@ -20,6 +22,8 @@ module Hpath
 
     if path[:identifier]
       object = _resolve_identifier(object, path[:identifier])
+    elsif path[:axis] == "parent"
+      object = parent
     end
 
     if path[:indices]
@@ -32,7 +36,7 @@ module Hpath
       object = _apply_filters(object, Hpath::Filter.new(path[:filter]))
     end
 
-    self._get(object, paths)
+    self._get(object, paths, _object)
   end
 
   def self._apply_filters(object, filter)
