@@ -56,23 +56,23 @@ Hpath.get record, "/_source/id"
 Hpath.get record, "/_source/[id, title]"
 # => { "id" => "123", "title" => "<h1>About a hash</h1>" }
 
-Hpath.get record, "/price/*[currency=:USD]"
+Hpath.get record, "/price/*[currency=USD]"
 # => [{ currency: :USD, value: 12.99 }]
 
-Hpath.get record, "/price/*[currency=:USD,value<10]"
+Hpath.get record, "/price/*[currency=USD,value<10]"
 # => nil
 
-Hpath.get record, "/price/*[(currency=:USD|currency=:EUR),value<10]"
+Hpath.get record, "/price/*[(currency=USD|currency=EUR),value<10]"
 # => [{ currency: :EUR, value:  8.99 }]
 
-Hpath.get record, "/subject/*[:type='automatic']"
+Hpath.get record, "/subject/*[type=automatic]"
 # => [
 #      { type: "automatic", value: "hash" },
 #      { type: "automatic", value: "hashes" },
 #      { type: "automatic", value: "ruby" }
 #    ]
 
-Hpath.get record, "/subject/*[:type='automatic']/type"
+Hpath.get record, "/subject/*[type=automatic]/type"
 # => ["automatic", "automatic", "automatic"]
 ```
 
