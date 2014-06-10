@@ -56,7 +56,7 @@ module Hpath
       else
         object.map do |element|
           if element.is_a?(Hash)
-            element[identifier]
+            element[identifier.to_s] || element[identifier.to_sym] 
           elsif element.respond_to?(identifier)
             element.send(identifier)
           else
@@ -68,7 +68,7 @@ module Hpath
       if identifier.to_s == "*"
         object.map { |key, value| {key => value} }
       else
-        object[identifier]
+        object[identifier.to_s] || object[identifier.to_sym]
       end
     else
       #binding.pry
@@ -85,7 +85,7 @@ module Hpath
 
   def self._resolve_keys(object, keys)
     if object.is_a?(Hash)
-      object.select { |key, value| keys.include?(key) }
+      object.select { |key, value| keys.include?(key.to_s) || keys.include?(key.to_sym) }
     else
       raise "Cannot resolve keys for non-hash objects!"
     end
