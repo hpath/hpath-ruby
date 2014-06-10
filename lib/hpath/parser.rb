@@ -56,7 +56,7 @@ class Hpath::Parser
       }
 
       rule(:keys) {
-        match('[a-zA-Z0-9]').repeat(1).as(:key) >> (space? >> str(",") >> match('[a-zA-Z0-9]').repeat(1).as(:key)).repeat
+        match('[a-zA-Z0-9]').repeat(1).as(:key) >> (space? >> str(",") >> space? >> match('[a-zA-Z0-9]').repeat(1).as(:key)).repeat
       }
 
       rule(:indices) {
