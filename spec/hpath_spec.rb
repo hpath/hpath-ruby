@@ -32,18 +32,18 @@ describe Hpath do
       end
       
       it "processes \"/[key1, key2]\" for a hash" do
-        hpath_result = Hpath.get({a: 1, b: 2, c:3}, "/[a,c]")
-        expect(hpath_result).to eq({a: 1, c: 3})
+        hpath_result = Hpath.get({a: 1, b: 2, "c" => 3}, "/[a,c]")
+        expect(hpath_result).to eq({a: 1, "c" => 3})
       end
 
       it "processes \"/[key=value]\" for a array of hashes" do
-        hpath_result = Hpath.get([{a: "foo"}, {a: "bar"}, {a: "muff"}], "/[a=bar]")
-        expect(hpath_result).to eq([{a: "bar"}])
+        hpath_result = Hpath.get([{a: "foo"}, {a: "bar"}, { "a" => :bar }, {a: "muff"}], "/[a=bar]")
+        expect(hpath_result).to eq([{:a=>"bar"}, {"a"=>:bar}])
       end
 
       it "processes \"/[key1=value1,key2=value2]\" for a array of hashes" do
-        hpath_result = Hpath.get([{a:"1", b:"2", c:"3"}, {a:"1", b:"2", c:"3"}, {a:"2", b:"1", c:"3"}], "/[a=1,b=2]")
-        expect(hpath_result).to eq([{a:"1", b:"2", c:"3"}, {a:"1", b:"2", c:"3"}])
+        hpath_result = Hpath.get([{a:"1", b:"2", c:"3"}, {"a" => "1", "b" => "2", c:"3"}, {a:"2", b:"1", c:"3"}], "/[a=1,b=2]")
+        expect(hpath_result).to eq([{:a=>"1", :b=>"2", :c=>"3"}, {"a"=>"1", "b"=>"2", :c=>"3"}])
       end
 
       it "processes \"/[key1=value1,(key2=value2|key3=value3)]\" for a array of hashes" do
@@ -54,6 +54,16 @@ describe Hpath do
       it "processes \"/array/key\" for an array of hashes" do
         hpath_result = Hpath.get([{a:"1", b:"2", c:"3"}, {a:"1", b:"5", c:"6"}, {a:"2", b:"1", c:"3"}], "/a")
         expect(hpath_result).to eq(["1", "1", "2"])
+      end
+      
+      it "processes \"/key1/::parent\" for a hash" do
+        hpath_result = Hpath.get({ foo: { bar: "foobar" } },  "/foo/::parent")
+        expect(hpath_result).to eq({ foo: { bar: "foobar" } })
+      end
+
+      it "processes \"/[n]/::parent\" for an array of hashes" do
+        hpath_result = Hpath.get([{ foo: { bar: "foobar" } }],  "/[0]/::parent")
+        expect(hpath_result).to eq([{ foo: { bar: "foobar" } }])
       end
     end
   end
