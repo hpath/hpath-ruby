@@ -35,7 +35,7 @@ class Hpath::Parser
       rule(:space?) { space.maybe }
 
       rule(:key_value_filter) {
-        space? >> match['a-zA-Z'].repeat(1).maybe.as(:key) >> (str("<") | str(">") | str("=").repeat(1,3)).as(:operator) >> match['a-zA-Z0-9'].repeat(1).as(:value) >> space?
+        space? >> match['0-9a-zA-Z@_'].repeat(1).maybe.as(:key) >> (str("<") | str(">") | str("=").repeat(1,3)).as(:operator) >> match['a-zA-Z0-9'].repeat(1).as(:value) >> space?
       }
 
       rule(:or_filter) {

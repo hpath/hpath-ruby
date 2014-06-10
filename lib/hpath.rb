@@ -93,15 +93,17 @@ module Hpath
       if identifier.to_s == "*"
         object
       else
-        object.map do |element|
+        mapped_object = object.map do |element|
           if element.is_a?(Hash)
             element[identifier.to_s] || element[identifier.to_sym] 
           elsif element.respond_to?(identifier)
             element.send(identifier)
           else
-            raise "Cannot apply identifier to collection object!"
+            nil
           end
-        end
+        end.compact.flatten(1)
+
+        mapped_object unless mapped_object.empty?
       end
     elsif object.is_a?(Hash)
       if identifier.to_s == "*"

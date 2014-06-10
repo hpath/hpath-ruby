@@ -1,3 +1,5 @@
+require "some_more_complex_hpath_tests"
+
 describe Hpath do
   describe "#get" do
     describe "returns the corresponding value from the given object" do
