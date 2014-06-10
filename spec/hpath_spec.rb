@@ -91,6 +91,11 @@ describe Hpath do
         Hpath.set(hash = {}, "/key1[]/bar", { foo: "bar"})
         expect(hash).to eq({key1: [{bar: {foo: "bar"}}]})
       end
+
+      it "processes \"/key1\" = 1 for a hash" do
+        Hpath.set(hash = {}, "/key1", 1)
+        expect(hash).to eq({key1: 1})
+      end
     end
   end
 end

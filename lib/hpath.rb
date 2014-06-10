@@ -46,12 +46,6 @@ module Hpath
 
   def self._set(object, paths, value)
     if paths.empty?
-      if object.is_a?(Array)
-        object.push(value)
-      elsif object.is_a?(Hash)
-        object.merge!(value)
-      end
-
       return
     else
       path = paths.shift
@@ -60,12 +54,24 @@ module Hpath
     if (_object = self._get(object, [path])).nil?
       if object.is_a?(Array)
         if path[:type] == Array
-          object.push(_object = [])
+          unless paths.empty?
+            object.push(_object = [])
+          else
+            object.push(_object = value)
+          end
         elsif path[:type] == Hash
-          object.push({ path[:identifier].to_sym => (_object = {}) })
+          unless paths.empty?
+            object.push({ path[:identifier].to_sym => (_object = {}) })
+          else
+            object.push({ path[:identifier].to_sym => (_object = value) })
+          end
         end
       elsif object.is_a?(Hash)
-        object[path[:identifier].to_sym] = (_object = path[:type].new)
+        unless paths.empty?
+          object[path[:identifier].to_sym] = (_object = path[:type].new)
+        else
+          object[path[:identifier].to_sym] = (_object = value)
+        end
       end
     end
 
