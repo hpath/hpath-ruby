@@ -56,23 +56,23 @@ Hpath.get record, "/_source/id"
 Hpath.get record, "/_source/[id, title]"
 # => { "id" => "123", "title" => "<h1>About a hash</h1>" }
 
-Hpath.get record, "/price/*[currency=:USD]"
+Hpath.get record, "/price/*[currency=USD]"
 # => [{ currency: :USD, value: 12.99 }]
 
-Hpath.get record, "/price/*[currency=:USD,value<10]"
+Hpath.get record, "/price/*[currency=USD,value<10]"
 # => nil
 
-Hpath.get record, "/price/*[(currency=:USD|currency=:EUR),value<10]"
+Hpath.get record, "/price/*[(currency=USD|currency=EUR),value<10]"
 # => [{ currency: :EUR, value:  8.99 }]
 
-Hpath.get record, "/subject/*[:type='automatic']"
+Hpath.get record, "/subject/*[type=automatic]"
 # => [
 #      { type: "automatic", value: "hash" },
 #      { type: "automatic", value: "hashes" },
 #      { type: "automatic", value: "ruby" }
 #    ]
 
-Hpath.get record, "/subject/*[:type='automatic']/type"
+Hpath.get record, "/subject/*[type=automatic]/type"
 # => ["automatic", "automatic", "automatic"]
 ```
 
@@ -103,23 +103,11 @@ Hpath.get [:a,:b,:c], "/[1,2]"
 ```
 
 ### `/[key1, key2, ...]`
-If current root element is a hash, get a hash only with the given keys. Since it cannot be determined, if the key is a symbol or a string, both interpretations are checked, with a preference for symbols. If the current object is not a hash, but has methods named `key1, key2`, this methods are called and the results are returned.
+If current element is a hash, get a hash only with the given keys. Since it cannot be determined, if the key is a symbol or a string, both interpretations are checked. If the current object is not a hash, but has methods named `key1, key2`, this methods are called and the results are returned.
 
 ```ruby
 Hpath.get {a: "b", c: "d", e: "f"}, "/[a,c]"
 # => {a: "b", c: "d"}
-```
-
-One can specify the kind of key (string, symbol), be either prefixing the key with a `:` or enclosing the key be either single or double quotes.
-
-```ruby
-Hpath.get {a: "b", c: "d", e: "f"}, "/[:a,'c']"
-# => {a: "b"}
-```
-
-```ruby
-Hpath.get {"a" => "b", "c" => "d", "e" => "f"}, "/['a',\"c\"]"
-# => {"a" => "b", "c" => "d"}
 ```
 
 ### `/*`
@@ -148,18 +136,6 @@ If the current element is an array, the non-array behaviour is applied to all me
 ```ruby
 Hpath.get([{a:"1", b:"2", c:"3"}, {a:"2", b:"5", c:"6"}], "/a")
 # => ["1", "2"]
-```
-
-As with the `/[key, ...]` syntax, when no key type is specified, both, symbols and string keys are respected. You can specify a key type accordingly be prefixing it with a `:` or enclosing it be single or double quotes.
-
-```ruby
-Hpath.get {a: { b: "c" } }, "/:a"
-# => { b: "c" }
-```
-
-```ruby
-Hpath.get {"a" => { b: "c" } }, "/'a'"
-# => { b: "c" }
 ```
 
 ## Contributing
