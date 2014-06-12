@@ -7,6 +7,8 @@ class Hpath::Filter
       @children = filter_hash.values.first.map do |element|
         Hpath::Filter.new(element)
       end
+    elsif @type == :key_existence_filter
+      @key = filter_hash[:key_existence_filter][:key]
     elsif @type == :key_value_filter
       @key = filter_hash[:key_value_filter][:key]
       @value = filter_hash[:key_value_filter][:value]
@@ -18,6 +20,10 @@ class Hpath::Filter
       @children.all? { |child_filter| child_filter.applies?(object) }
     elsif @type == :or_filter
       @children.any? { |child_filter| child_filter.applies?(object) }
+    elsif @type == :key_existence_filter
+      if object.is_a?(Hash)
+        object.keys.include?(@key.to_s) || object.keys.include?(@key.to_sym)
+      end
     elsif @type == :key_value_filter
       if object.is_a?(Hash) && (@value.is_a?(String) || @value.is_a?(Symbol))
         object[@key.to_s] == @value.to_s || object[@key.to_sym] == @value.to_s ||

@@ -1,4 +1,16 @@
 describe Hpath::Filter do
+  describe "key exists filter \"[foobar?\"]" do
+    context "when object is a array of hashes" do
+      let(:filter) { Hpath::Filter.new(key_existence_filter: { key: "foobar"} ) }
+      let(:array_of_hashes) { [{foobar: 1}, {foo: 2}, {bar: 3}, {foobar: "foobar"}]}
+
+      it "returns hashes, which include the given key" do
+        filtered_array = array_of_hashes.select{ |e| filter.applies?(e) }
+        expect(filtered_array).to eq([{foobar: 1}, {foobar: "foobar"}])
+      end
+    end
+  end
+
   context "initialized with a (nested) filter hash" do
     let(:filter_hash) { Hpath::Parser.new.parse("/array/*[a=b,c=d,(e=d|e=f)]")[:path].first[:filter] }
 

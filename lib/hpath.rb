@@ -16,6 +16,18 @@ module Hpath
   #
   private
   #
+  def self._dfs(object, filter)
+    if filter.applies?(object)
+      object
+    elsif object.is_a?(Array)
+      object.map { |e| _dfs(e, filter) }
+      .tap { |o| o.compact! }
+      .tap { |o| o.flatten!(1) }
+    elsif object.is_a?(Hash)
+      _dfs(object.values, filter)
+    end
+  end
+  
   def self._get(object, paths, parent = object)
     _object = object
 
@@ -25,8 +37,16 @@ module Hpath
       path = paths.shift
     end
 
+    if path[:filter]
+      filter = Hpath::Filter.new(path[:filter])
+    end
+
     if path[:identifier]
-      object = _resolve_identifier(object, path[:identifier])
+      if path[:identifier] == "**"
+        object = _dfs(object, filter)
+      else
+        object = _resolve_identifier(object, path[:identifier])
+      end
     elsif path[:axis] == "parent"
       object = parent
     end
@@ -37,7 +57,7 @@ module Hpath
       object = _resolve_keys(object, path[:keys])
     end
 
-    unless path[:filter].nil?
+    if filter && !(path[:identifier] && path[:identifier] == "**")
       object = _apply_filters(object, Hpath::Filter.new(path[:filter]))
     end
 

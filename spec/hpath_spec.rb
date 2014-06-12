@@ -30,7 +30,7 @@ describe Hpath do
 
       it "processes \"/*\" for a hash" do
         hpath_result = Hpath.get({a: "b", c: "d"}, "/*")
-        expect(hpath_result).to eq([{a: "b"}, {c: "d"}])
+        expect(hpath_result).to eq([{:a=>"b"}, {:c=>"d"}])
       end
       
       it "processes \"/[key1, key2]\" for a hash" do
@@ -66,6 +66,42 @@ describe Hpath do
       it "processes \"/[n]/::parent\" for an array of hashes" do
         hpath_result = Hpath.get([{ foo: { bar: "foobar" } }],  "/[0]/::parent")
         expect(hpath_result).to eq([{ foo: { bar: "foobar" } }])
+      end
+
+      it "processes \"/**[filter]\"" do
+        hpath_result = Hpath.get({
+          query: {
+            bool: {
+              must: [
+                {
+                  query_string: {
+                    query: "linux",
+                    fields: ["_all", "title^2"]
+                  }
+                },
+                {
+                  query_string: {
+                    query: "kofler",
+                    fields: ["creator"]
+                  }
+                }
+              ],
+              should: [
+                {
+                  query_string: {
+                    query: "linux",
+                    fields: ["subject"]
+                  }
+                }
+              ]
+            }
+          }
+        }, "/**[query_string?]")
+        expect(hpath_result).to eq(
+          [{:query_string=>{:query=>"linux", :fields=>["_all", "title^2"]}},
+           {:query_string=>{:query=>"kofler", :fields=>["creator"]}},
+           {:query_string=>{:query=>"linux", :fields=>["subject"]}}]
+        )
       end
     end
 

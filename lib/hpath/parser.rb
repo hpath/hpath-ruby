@@ -34,6 +34,10 @@ class Hpath::Parser
       rule(:space)  { match('\s').repeat(1) }
       rule(:space?) { space.maybe }
 
+      rule(:key_existence_filter) {
+        space? >> match['0-9a-zA-Z@_'].repeat(1).as(:key) >> str("?") >> space?
+      }
+
       rule(:key_value_filter) {
         space? >> match['0-9a-zA-Z@_'].repeat(1).maybe.as(:key) >> (str("<") | str(">") | str("=").repeat(1,3)).as(:operator) >> match['a-zA-Z0-9'].repeat(1).as(:value) >> space?
       }
@@ -53,7 +57,7 @@ class Hpath::Parser
       }
 
       rule(:filter) {
-        space? >> (or_filter.as(:or_filter) | and_filter.as(:and_filter) | key_value_filter.as(:key_value_filter)).as(:filter) >> space?
+        space? >> (or_filter.as(:or_filter) | and_filter.as(:and_filter) | key_existence_filter.as(:key_existence_filter) | key_value_filter.as(:key_value_filter)).as(:filter) >> space?
       }
 
       rule(:keys) {
@@ -97,6 +101,10 @@ class Hpath::Parser
           keys: keys.nil? ? nil : keys.map { |element| element[:key].to_s.to_sym },
           type: type
         }
+      }
+
+      rule(key: simple(:key)) {
+        { key: key.nil? ? nil : key.to_sym }
       }
 
       rule(key: simple(:key), operator: simple(:operator), value: simple(:value)) {
