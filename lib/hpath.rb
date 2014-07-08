@@ -1,16 +1,15 @@
 module Hpath
-  require "hpath/filter"
   require "hpath/parser"
   require "hpath/version"
 
   def self.get(object, hpath_string)
-    hpath = Hpath::Parser.parse(hpath_string)
-    _get(object, hpath[:path])
+    parsed_hpath = Hpath::Parser.parse(hpath_string)
+    _get(object, parsed_hpath)
   end
 
   def self.set(object, hpath_string, value)
-    hpath = Hpath::Parser.parse(hpath_string)
-    _set(object, hpath[:path], value)
+    parsed_hpath = Hpath::Parser.parse(hpath_string)
+    _set(object, parsed_hpath, value)
   end
 
   #
@@ -37,13 +36,9 @@ module Hpath
       path = paths.shift
     end
 
-    if path[:filter]
-      filter = Hpath::Filter.new(path[:filter])
-    end
-
     if path[:identifier]
       if path[:identifier] == "**"
-        object = _dfs(object, filter)
+        object = _dfs(object, path[:filter])
       else
         object = _resolve_identifier(object, path[:identifier])
       end
@@ -51,14 +46,33 @@ module Hpath
       object = parent
     end
 
-    if path[:indices]
-      object = _resolve_indices(object, path[:indices])
-    elsif path[:keys]
-      object = _resolve_keys(object, path[:keys])
-    end
+    if path[:filter] && !(path[:identifier] && path[:identifier] == "**")
+      filter = path[:filter]
 
-    if filter && !(path[:identifier] && path[:identifier] == "**")
-      object = _apply_filters(object, Hpath::Filter.new(path[:filter]))
+      object =
+      if filter.type == :index
+        indices = path[:filter].operands
+
+        if object.is_a?(Array)
+          if indices.length == 1
+            object[indices.first]
+          elsif indices.length > 1
+            indices.map { |index| object[index] }
+          end
+        elsif object.is_a?(Hash)
+          object.select do |key, value|
+            indices.include?(key.to_s) || indices.include?(key.to_sym)
+          end
+        end
+      else
+        if object.is_a?(Array)
+          object.select do |element|
+            filter.applies?(element)
+          end
+        else
+          # TODO
+        end
+      end
     end
 
     self._get(object, paths, _object)
@@ -73,22 +87,14 @@ module Hpath
 
     if (_object = self._get(object, [path])).nil?
       if object.is_a?(Array)
-        if path[:type] == Array
-          unless paths.empty?
-            object.push(_object = [])
-          else
-            object.push(_object = value)
-          end
-        elsif path[:type] == Hash
-          unless paths.empty?
-            object.push({ path[:identifier].to_sym => (_object = {}) })
-          else
-            object.push({ path[:identifier].to_sym => (_object = value) })
-          end
+        unless paths.empty?
+          object.push({ path[:identifier].to_sym => (_object = {}) })
+        else
+          object.push({ path[:identifier].to_sym => (_object = value) })
         end
       elsif object.is_a?(Hash)
         unless paths.empty?
-          object[path[:identifier].to_sym] = (_object = path[:type].new)
+          object[path[:identifier].to_sym] = (_object = {})
         else
           object[path[:identifier].to_sym] = (_object = value)
         end
@@ -96,16 +102,6 @@ module Hpath
     end
 
     self._set(_object, paths, value)
-  end
-
-  def self._apply_filters(object, filter)
-    if object.is_a?(Array)
-      object.select do |element|
-        filter.applies?(element)
-      end
-    else
-      # TODO
-    end
   end
 
   def self._resolve_identifier(object, identifier)
@@ -133,22 +129,6 @@ module Hpath
       end
     else
       # TODO
-    end
-  end
-
-  def self._resolve_indices(object, indices)
-    if indices.length == 1
-      object[indices.first]
-    elsif indices.length > 1
-      indices.map { |index| object[index] }
-    end
-  end
-
-  def self._resolve_keys(object, keys)
-    if object.is_a?(Hash)
-      object.select { |key, value| keys.include?(key.to_s) || keys.include?(key.to_sym) }
-    else
-      raise "Cannot resolve keys for non-hash objects!"
     end
   end
 end
