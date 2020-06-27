@@ -10,6 +10,7 @@ class Hpath::Filter
       [:and, []]
     else
       case string
+      when /!=/  then [:inequality, string.split("!=")]
       when /=/  then [:equality, string.split("=")]
       when /</  then [:less_than, string.split("<")]
       when />/  then [:greater_than, string.split(">")]
@@ -40,6 +41,13 @@ class Hpath::Filter
         object[key.to_s] == value.to_sym || object[key.to_sym] == value.to_sym
       elsif object.respond_to(key)
         object.send(key) == value
+      end
+    elsif @type == :inequality
+      key, value = @operands
+      if object.is_a?(Hash)
+       object[key.to_s] != value.to_s 
+      elsif object.respond_to(key)
+        object.send(key) != value
       end
     end
   end
