@@ -28,7 +28,7 @@ class Hpath::Parser::FilterExpressionParser
     current_filter = Hpath::Filter.new
     parent = {} # look up table    
     
-    string.gsub(/\s/, "").each_char do |char|
+    string.each_char do |char|
       unless special_character?(char)
         char_buffer << char
       else
